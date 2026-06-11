@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "Budget",
+    "slug": "budget",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.joshapproved.budget"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.joshapproved.budget"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "owner": "josh-approved",
+    "plugins": [
+      "./plugins/withGradleJvmArgs",
+      "expo-sqlite",
+      "expo-sharing",
+      "expo-splash-screen",
+      "expo-status-bar",
+      "expo-font"
+    ]
+  }
+}
