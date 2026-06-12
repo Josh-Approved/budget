@@ -10,4 +10,7 @@
  * light and dark background washes from it, so one declaration is enough.
  */
 
-export const APP_ACCENT = '#6B6B72';
+// Dusty teal — sits adjacent to money-green without colliding with the
+// semantic approval green, and reads calm (spec § Brand accent). Per-app, in-app
+// only; never a CTA, never on marketing surfaces.
+export const APP_ACCENT = '#3F7D7D';

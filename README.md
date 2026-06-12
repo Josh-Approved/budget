@@ -1,6 +1,12 @@
 # Budget
 
-One sentence on what this app does. (Replace this starter README before ship.)
+A simple expense tracker. Tap +/−, pick a category, and see your month at a glance. No paywall. No ads. No tracking. No accounts. Your data stays with you.
+
+- Add expenses and income in seconds with a built-in keypad.
+- A category breakdown of where your money went, by day, week, month, or year.
+- Multiple accounts (cash, card, savings) with running balances.
+- Recurring transactions for rent and subscriptions, added when they're due — never silently.
+- Search your history, and export or restore everything as CSV or a JSON backup.
 
 ## Run
 

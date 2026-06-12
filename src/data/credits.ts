@@ -25,6 +25,30 @@ export const CREDITS: CreditEntry[] = [
     "url": "https://github.com/expo/expo/tree/main/packages/expo"
   },
   {
+    "name": "React Navigation",
+    "version": "7.3.1",
+    "license": "MIT",
+    "url": "https://reactnavigation.org"
+  },
+  {
+    "name": "react-native-svg",
+    "version": "15.15.4",
+    "license": "MIT",
+    "url": "https://github.com/react-native-community/react-native-svg"
+  },
+  {
+    "name": "Zustand",
+    "version": "5.0.14",
+    "license": "MIT",
+    "url": "https://github.com/pmndrs/zustand"
+  },
+  {
+    "name": "Lucide",
+    "version": "1.17.0",
+    "license": "ISC",
+    "url": "https://lucide.dev"
+  },
+  {
     "name": "IBM Plex",
     "version": "",
     "license": "OFL 1.1",
