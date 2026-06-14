@@ -72,7 +72,6 @@ export interface Settings {
   currencyCode: string;
   defaultCategoryId?: string;
   defaultAccountId?: string;
-  theme: 'system' | 'light' | 'dark';
 }
 
 // ---------- Constructors ----------

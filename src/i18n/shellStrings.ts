@@ -21,6 +21,13 @@ export const SHELL_STRINGS = {
   },
   settings: {
     title: 'Settings',
+    appearance: 'Appearance',
+    themeSystem: 'System',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    language: 'Language',
+    languageSystem: 'System',
+    languageSystemHint: 'Match your phone',
     yourData: 'Your data',
     about: 'About',
     export: 'Export',

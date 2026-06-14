@@ -15,6 +15,14 @@ name: QA e2e
 #   This workflow is the PR gate (full set on every PR). The build-time gate that
 #   distinguishes TestFlight-fast from prod-full is wired at submit time, not here.
 #
+# DEVICE MATRIX (P10 — qa/devices.json, runbooks/device-quality-net.md): this PR
+# job IS the `smoke` profile — one phone per platform (iPhone + Pixel), light
+# appearance, default font, portrait. Cost is deliberately unchanged. The `full`
+# profile (every device × appearance × font-scale, landscape on tablets) +
+# visual-regression baselines + the one bounded reviewer pass run per-RELEASE via
+# `scripts/qa/matrix.mjs --profile full` (and on the monthly fleet-health sweep,
+# P8), NOT on every PR — that's where breadth belongs, off the per-PR critical path.
+#
 # Tier 2/3 drive the app through scripted flows on cloud sims/emulators, capture
 # screenshots at named waypoints, frame them via the vendored
 # render-screenshots.mjs, and upload framed store assets as workflow artifacts.

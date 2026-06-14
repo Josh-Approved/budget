@@ -171,10 +171,6 @@ export function sanitizeSnapshot(raw: unknown): BudgetSnapshot {
         typeof settingsRaw.defaultCategoryId === 'string' ? settingsRaw.defaultCategoryId : undefined,
       defaultAccountId:
         typeof settingsRaw.defaultAccountId === 'string' ? settingsRaw.defaultAccountId : undefined,
-      theme:
-        settingsRaw.theme === 'light' || settingsRaw.theme === 'dark' || settingsRaw.theme === 'system'
-          ? settingsRaw.theme
-          : undefined,
     },
   };
 }

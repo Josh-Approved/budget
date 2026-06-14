@@ -457,6 +457,14 @@ const ruleEasJsonShape = () => {
   if (!e.build?.development) issues.push('build.development missing');
   if (!e.build?.preview) issues.push('build.preview missing');
   if (!e.build?.production) issues.push('build.production missing');
+  // The QA capture/device-net pipeline builds the iOS app for the SIMULATOR
+  // (capture.mjs extracts the .app from a simulator tarball). Without
+  // build.preview.ios.simulator=true, `eas build --local` tries an
+  // internal-distribution device build and dies on credential setup in
+  // non-interactive mode — a 10-minute failure for a one-line config gap.
+  if (e.build?.preview && e.build.preview.ios?.simulator !== true) {
+    issues.push('build.preview.ios.simulator must be true (QA captures need a simulator build, else eas demands device credentials)');
+  }
   if (!e.submit?.production?.ios?.ascAppId) issues.push('submit.production.ios.ascAppId missing');
   const ios = e.submit?.production?.ios || {};
   for (const forbidden of ['ascApiKeyPath', 'ascApiKeyId', 'ascApiKeyIssuerId']) {
@@ -464,6 +472,74 @@ const ruleEasJsonShape = () => {
   }
   if (issues.length) return fail('rn/eas-json-shape', 'eas.json deviates from canonical shape', issues);
   return pass('rn/eas-json-shape', 'eas.json matches canonical shape');
+};
+
+// ---------- rules: RN app identity name (Spotlight-safe CFBundleName) ----------
+
+// iOS draws the home-screen icon label from CFBundleDisplayName (Expo sets it
+// from expo.name), but Spotlight's "Top Hit" app row — and a few other system
+// surfaces — render CFBundleName, which `expo prebuild` defaults to the Xcode
+// PRODUCT_NAME: the app name with spaces stripped ("Grocery List" -> the
+// product "GroceryList"). So a multi-word app that's correct on the home screen
+// still shows up as "GroceryList" in search. The fix is to pin
+// ios.infoPlist.CFBundleName to the real, spaced name. Caught by hand on device
+// 2026-06-13 (Spotlight showed "GroceryList"/"PackingList"). Single-word names
+// have no space to lose, so they pass trivially. (canon § App identity name)
+const ruleAppNameSpotlightSafe = () => {
+  if (surface !== 'rn') return skip('rn/app-name-spotlight-safe', 'Not an RN app');
+  const expo = readJson(join(appDir, 'app.json'))?.expo;
+  const name = expo?.name;
+  if (!name || typeof name !== 'string') {
+    return warn('rn/app-name-spotlight-safe', 'app.json expo.name missing — cannot verify the Spotlight name');
+  }
+  if (!/\s/.test(name)) {
+    return pass('rn/app-name-spotlight-safe', `Single-word name "${name}" — no space for Spotlight to drop`);
+  }
+  const cfName = expo?.ios?.infoPlist?.CFBundleName;
+  if (!cfName) {
+    return fail('rn/app-name-spotlight-safe',
+      `expo.name "${name}" has a space but ios.infoPlist.CFBundleName is unset — iOS Spotlight shows the space-stripped PRODUCT_NAME. Set "CFBundleName": "${name}".`);
+  }
+  if (cfName !== name) {
+    return fail('rn/app-name-spotlight-safe',
+      `ios.infoPlist.CFBundleName "${cfName}" doesn't match expo.name "${name}" — Spotlight renders CFBundleName, so they must agree (set it to "${name}").`);
+  }
+  return pass('rn/app-name-spotlight-safe', `CFBundleName "${cfName}" matches expo.name — Spotlight-safe`);
+};
+
+// ---------- rules: RN interaction safety (no keyboard dead-ends) ----------
+
+// A TextInput that opts out of the default blur-on-submit (blurOnSubmit={false},
+// or the newer submitBehavior="submit") keeps the soft keyboard up after the
+// return key — deliberately, so a user can rapid-fire entries. The trap: if the
+// submit handler early-returns on an empty field, the return key becomes a
+// no-op AND the keyboard never dismisses, so the field is stuck with no
+// on-keyboard way out (you must navigate away to escape). A real, device-only
+// defect — grocery-list's add-item box, caught by hand 2026-06-13. The remedy
+// is always an explicit escape on the empty/idle submit (Keyboard.dismiss() or
+// .blur()), so we flag any file that persists the keyboard without one. Fires
+// on both platforms equally — this is a UX dead-end, not an iOS quirk.
+const KB_PERSIST_RE = /blurOnSubmit\s*=\s*\{\s*false\s*\}|submitBehavior\s*=\s*\{?\s*['"]submit['"]/;
+const KB_ESCAPE_RE = /Keyboard\s*\.\s*dismiss\s*\(|\.\s*blur\s*\(/;
+
+const ruleKeyboardDismissEscape = () => {
+  if (surface !== 'rn') return skip('rn/keyboard-dismiss-escape', 'Not an RN app');
+  const files = srcSourceFiles();
+  if (!files.length) return skip('rn/keyboard-dismiss-escape', 'No src/ source files');
+  const hits = [];
+  for (const f of files) {
+    const raw = readText(f);
+    if (!raw) continue;
+    const code = stripComments(raw);
+    if (KB_PERSIST_RE.test(code) && !KB_ESCAPE_RE.test(code)) {
+      hits.push(`${relative(appDir, f)}: persists the keyboard on submit (blurOnSubmit={false} / submitBehavior="submit") but never calls Keyboard.dismiss() / .blur()`);
+    }
+  }
+  if (hits.length) {
+    return warn('rn/keyboard-dismiss-escape',
+      'Keyboard can get stuck: a persistent-keyboard TextInput has no empty/idle dismiss escape — submitting an empty field must call Keyboard.dismiss() so the user is never trapped with the keyboard open', hits);
+  }
+  return pass('rn/keyboard-dismiss-escape', 'No persistent-keyboard inputs without a dismiss escape');
 };
 
 // ---------- rules: Chrome-extension-specific (manifest.json) ----------
@@ -614,8 +690,13 @@ const ruleNoHardcodedStrings = () => {
     const raw = readText(f);
     if (!raw) continue;
     const text = stripComments(raw);
-    // 1) Raw JSX text content: >copy< (no braces/tags inside).
-    for (const m of text.matchAll(/>([^<>{}]+)</g)) {
+    // 1) Raw JSX text content: >copy< (no braces/tags inside). The opening `>`
+    //    must close a tag (not be an operator like `=>` / `>=`) and the closing
+    //    `<` must open a tag (a tag-name letter or a `/`), never a comparison
+    //    like `offset < 0`. Without these guards, a JS arrow/comparison `>`…`<`
+    //    span swallows source between two attributes as fake "copy" (found
+    //    2026-06-12 on the budget proving run: `offset >= 0}…() => offset < 0`).
+    for (const m of text.matchAll(/(?<![=!<>&|+\-*/])>([^<>{}]+)<(?=[A-Za-z/])/g)) {
       const inner = m[1].replace(/\s+/g, ' ').trim();
       if (!inner || I18N_TEXT_OK.test(inner)) continue;
       if (!/[A-Za-z]{2,}/.test(inner)) continue;
@@ -635,6 +716,40 @@ const ruleNoHardcodedStrings = () => {
   return pass('i18n/no-hardcoded-strings', `No hardcoded user-facing strings in ${files.length} screen/component file(s)`);
 };
 
+// ---------- rule: dark-mode appearance control (canon § Theming) ----------
+//
+// Rendering already follows the OS via the canonical useTheme() (light/dark
+// palettes in src/theme/colors.ts). This rule guards the USER-FACING control:
+// every app renders the canonical <AppearanceToggle/> (System/Light/Dark) in
+// Settings and applies the saved choice at the app root via
+// useApplyThemePreference() — both shipped by the design-system module so no
+// app forks them. WARN during rollout (codify→backfill→shipgate, like the
+// testing/i18n tiers); promote per-app to FAIL with `"theme/enforce": true` in
+// qa/baseline.json once it's wired green.
+const enforceTheme = baseline['theme/enforce'] === true;
+const themeWarn = (id, message, detail) => (enforceTheme ? fail : warn)(id, message, detail);
+
+const ruleAppearanceToggle = () => {
+  if (surface !== 'rn') return skip('theme/appearance-toggle', 'Not a React Native app');
+  // App.tsx (root apply hook in non-shell apps) lives outside src/, so include
+  // it explicitly; shell apps carry the hook in src/shell/AppShell.tsx.
+  const haystack = [...srcSourceFiles(), join(appDir, 'App.tsx')]
+    .map(readText)
+    .filter(Boolean)
+    .join('\n');
+  if (!haystack) return skip('theme/appearance-toggle', 'No source files');
+  const hasToggle = /<AppearanceToggle\b/.test(haystack);
+  const hasApply = /useApplyThemePreference\s*\(/.test(haystack);
+  if (hasToggle && hasApply) {
+    return pass('theme/appearance-toggle',
+      'Renders <AppearanceToggle/> and applies the saved preference at root (canon § Theming)');
+  }
+  const missing = [];
+  if (!hasToggle) missing.push('no <AppearanceToggle/> rendered — Settings must offer System / Light / Dark');
+  if (!hasApply) missing.push('no useApplyThemePreference() at the app root — a saved Light/Dark choice is ignored on launch');
+  return themeWarn('theme/appearance-toggle', 'Dark-mode appearance control incomplete (canon § Theming)', missing);
+};
+
 // ---------- runner ----------
 
 const CANONICAL_RULES = [
@@ -652,6 +767,9 @@ const CANONICAL_RULES = [
   ruleNoAlertPrompt,
   ruleNoPlatformEarlyReturn,
   ruleEasJsonShape,
+  ruleAppearanceToggle,
+  ruleAppNameSpotlightSafe,
+  ruleKeyboardDismissEscape,
   ruleManifestMv3,
   ruleManifestPermissionsTight,
   ruleTestScriptPresent,

@@ -25,8 +25,18 @@
 
 import { SHELL_STRINGS } from './shellStrings';
 import { APP_STRINGS } from './appStrings';
+import { LOCALES } from './locales';
 
 type Dict = { [key: string]: string | Dict };
+
+/**
+ * Canon § Translations: every live app ships in-app strings in this set within
+ * its first listing-iteration cycle. Order = match priority (most-specific
+ * first). Extend per app when per-country installs justify it; RTL only after
+ * the layout is verified. Keep in lockstep with the store-listing locale set
+ * (`scripts/translate.mjs`, `runbooks/translations.md`).
+ */
+export const CANONICAL_LOCALES = ['es', 'de', 'fr', 'it', 'pt-BR', 'ja'] as const;
 
 function deepMerge(base: Dict, extra: Dict): Dict {
   const out: Dict = { ...base };
@@ -47,6 +57,43 @@ let active: Dict = deepMerge(SHELL_STRINGS as Dict, APP_STRINGS as Dict);
  *  English base and overlays the locale's translations. */
 export function setLocaleStrings(localeDict: Dict): void {
   active = deepMerge(deepMerge(SHELL_STRINGS as Dict, APP_STRINGS as Dict), localeDict);
+}
+
+/**
+ * Pick the best available locale for a device locale tag. Tries the full tag
+ * (e.g. "pt-BR"), then the primary subtag (e.g. "pt" → "pt-BR" if that's the
+ * only Portuguese we have), else null (English stays). Pure — exported for test.
+ */
+export function pickLocale(
+  deviceLocale: string,
+  available: string[] = Object.keys(LOCALES)
+): string | null {
+  if (!deviceLocale || !available.length) return null;
+  const tag = deviceLocale.replace('_', '-');
+  if (available.includes(tag)) return tag;
+  const primary = tag.split('-')[0].toLowerCase();
+  // Exact primary match (e.g. "es-MX" → "es").
+  const exact = available.find((a) => a.toLowerCase() === primary);
+  if (exact) return exact;
+  // Else a regional variant sharing the primary subtag (e.g. "pt" → "pt-BR").
+  const variant = available.find((a) => a.toLowerCase().split('-')[0] === primary);
+  return variant ?? null;
+}
+
+/** Apply the device's locale from the LOCALES map (no-op when English or when
+ *  no matching translation exists). Called once at module load below. */
+export function applyDeviceLocale(): void {
+  try {
+    const match = pickLocale(getLocale(), Object.keys(LOCALES));
+    if (match && LOCALES[match]) {
+      active = deepMerge(
+        deepMerge(SHELL_STRINGS as Dict, APP_STRINGS as Dict),
+        LOCALES[match] as Dict
+      );
+    }
+  } catch {
+    /* keep English */
+  }
 }
 
 /** Look up a dotted key. Returns the key itself if absent (visible, never throws). */
@@ -118,3 +165,8 @@ export function formatCurrency(
     return `${currency} ${amount}`;
   }
 }
+
+// Localize on import — picks the device locale from LOCALES, or stays English.
+// A no-op until translations land (LOCALES starts empty), so it's safe to ship
+// in every app from day one (canon § Translations: translation-ready by default).
+applyDeviceLocale();

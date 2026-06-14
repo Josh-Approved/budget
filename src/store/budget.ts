@@ -86,7 +86,6 @@ interface BudgetState {
   deleteRecurringRule: (id: string) => void;
 
   setCurrency: (code: string) => void;
-  setTheme: (theme: Settings['theme']) => void;
   setDefaultCategory: (id: string) => void;
   setDefaultAccount: (id: string) => void;
 
@@ -96,7 +95,6 @@ interface BudgetState {
 
 const DEFAULT_SETTINGS: Settings = {
   currencyCode: 'USD',
-  theme: 'system',
 };
 
 function touch<T extends { updatedAt: number }>(rec: T): T {
@@ -314,7 +312,6 @@ export const useBudgetStore = create<BudgetState>()((set, get) => ({
 
   // ---------- settings ----------
   setCurrency: (code) => updateSettings(set, get, { currencyCode: code }),
-  setTheme: (theme) => updateSettings(set, get, { theme }),
   setDefaultCategory: (id) => updateSettings(set, get, { defaultCategoryId: id }),
   setDefaultAccount: (id) => updateSettings(set, get, { defaultAccountId: id }),
 
@@ -407,7 +404,6 @@ function updateSettings(
 
 const SETTINGS_KEYS: (keyof Settings)[] = [
   'currencyCode',
-  'theme',
   'defaultCategoryId',
   'defaultAccountId',
 ];

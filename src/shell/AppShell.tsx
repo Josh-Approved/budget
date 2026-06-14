@@ -31,6 +31,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import AnimatedSplash from '../components/AnimatedSplash';
 import { buildNavTheme } from './navTheme';
+import { useApplyThemePreference } from '../theme';
+import { useApplyLocalePreference, useLocaleVersion } from '../i18n/localePreference';
 import { QA_MODE } from '../qa/qaMode';
 
 type Props = {
@@ -44,6 +46,15 @@ type Props = {
 };
 
 export function AppShell({ ready, children, navigationRef }: Props) {
+  // Restore + apply the saved appearance preference (System/Light/Dark) once,
+  // before first paint. Drives useColorScheme() below and in every screen.
+  useApplyThemePreference();
+  // Restore + apply the saved language (System, or a locale the user chose). The
+  // version keys <NavigationContainer> below so an explicit switch re-renders the
+  // whole tree in the new language (canon § Translations). System needs no
+  // remount — the device locale is applied on i18n import.
+  useApplyLocalePreference();
+  const localeVersion = useLocaleVersion();
   const isDark = useColorScheme() === 'dark';
   const [splashDone, setSplashDone] = useState(false);
 
@@ -52,7 +63,7 @@ export function AppShell({ ready, children, navigationRef }: Props) {
       <SafeAreaProvider>
         <ErrorBoundary>
           {ready && (
-            <NavigationContainer ref={navigationRef} theme={buildNavTheme(isDark)}>
+            <NavigationContainer key={localeVersion} ref={navigationRef} theme={buildNavTheme(isDark)}>
               <StatusBar style={isDark ? 'light' : 'dark'} />
               {children}
             </NavigationContainer>

@@ -5,7 +5,6 @@
  */
 
 import React, { useEffect } from 'react';
-import { Appearance } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAppFonts } from './src/theme';
@@ -49,18 +48,13 @@ export default function App() {
   const [fontsLoaded] = useAppFonts();
   const hydrated = useBudgetStore((s) => s.hydrated);
   const hydrate = useBudgetStore((s) => s.hydrate);
-  const theme = useBudgetStore((s) => s.settings.theme);
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
 
-  // Apply the appearance preference app-wide (system = follow the OS). This
-  // drives useColorScheme() in both the shell and the app screens.
-  useEffect(() => {
-    Appearance.setColorScheme(theme === 'system' ? 'unspecified' : theme);
-  }, [theme]);
-
+  // The appearance preference (System/Light/Dark) is restored + applied by the
+  // canonical AppShell via useApplyThemePreference(); nothing to wire here.
   const ready = fontsLoaded && hydrated;
 
   return (
