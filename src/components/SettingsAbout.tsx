@@ -65,7 +65,7 @@ export function SettingsAbout({ onAcknowledgements }: Props) {
           onPress={() => openUrl(STUDIO_URL)}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Learn more at joshapproved.com"
+          accessibilityLabel={t('about.learnMoreA11y')}
         >
           <Text style={s.learnMore}>{t('about.learnMore')}</Text>
         </Pressable>

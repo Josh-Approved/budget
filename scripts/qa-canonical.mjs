@@ -656,12 +656,15 @@ const ruleFlowDrift = async ({ appDir }) => {
 const enforceI18n = baseline['i18n/enforce'] === true;
 const i18nWarn = (id, message, detail) => (enforceI18n ? fail : warn)(id, message, detail);
 
-// Factory-synced / brand-locked components: copy is already externalized or is
-// a locked brand string — never flag these (skip by basename).
+// Brand-locked components: their only literal is the "josh approved" wordmark,
+// a brand proper noun that never translates (canon § voice) — skip by basename.
+// Every OTHER canonical component (FundingFooter, DonationModal, ReviewModal,
+// ErrorBoundary, Credits, SettingsAbout, AboutRow, ScreenHeader, EmptyState) is
+// now fully externalized via t() and IS scanned, so a re-introduced hardcoded
+// string in shell chrome is caught — the gap that shipped the untranslated
+// footer/modals (fixed 2026-06-14).
 const I18N_SKIP_FILES = new Set([
-  'AboutRow.tsx', 'FundingFooter.tsx', 'SettingsAbout.tsx', 'Wordmark.tsx',
-  'ErrorBoundary.tsx', 'ScreenHeader.tsx', 'EmptyState.tsx', 'Credits.tsx',
-  'ReviewModal.tsx', 'DonationModal.tsx', 'AnimatedSplash.tsx',
+  'Wordmark.tsx', 'AnimatedSplash.tsx',
 ]);
 // Words that are valid bare JSX text but never user copy to translate.
 const I18N_TEXT_OK = /^(?:[\s\d.,:;!?%$€£¥+\-/×·•|()[\]]+|[A-Za-z]{1})$/;
@@ -669,8 +672,10 @@ const I18N_TEXT_OK = /^(?:[\s\d.,:;!?%$€£¥+\-/×·•|()[\]]+|[A-Za-z]{1})$/
 // (`=>`), a TS generic, or a comparison, followed later by a JSX `<`, swallows a
 // run of source between them. User-facing copy never contains these tokens, so
 // reject the match when any appears. (Found 2026-06-11: `(it) => it.done).length;
-// return (` flagged as copy.)
-const I18N_CODE_LIKE = /[;=]|=>|\)\.|\]\(|\b(?:return|const|let|var|function|import|export|null|undefined)\b/;
+// return (` flagged as copy.) Also reject a span that starts with a closing
+// bracket or ends with an opening one — that's a swallowed JSX ternary fragment
+// like `) : onPress ? (`, never copy (found 2026-06-14 on AboutRow).
+const I18N_CODE_LIKE = /[;=]|=>|\)\.|\]\(|\b(?:return|const|let|var|function|import|export|null|undefined)\b|^[)\]}]|[([{]$/;
 
 const ruleNoHardcodedStrings = () => {
   if (surface !== 'rn') return skip('i18n/no-hardcoded-strings', 'Not a React Native app');
@@ -750,6 +755,40 @@ const ruleAppearanceToggle = () => {
   return themeWarn('theme/appearance-toggle', 'Dark-mode appearance control incomplete (canon § Theming)', missing);
 };
 
+// ---------- rule: in-app language control (canon § Translations) ----------
+//
+// The shell already follows the device locale automatically; this rule guards
+// the USER-FACING control: a shell app renders the canonical <LanguageSetting/>
+// in Settings (the translation sibling of <AppearanceToggle/>) and applies the
+// saved language at root via useApplyLocalePreference() (shipped in AppShell, so
+// shell apps get it for free). It only applies to shell apps — a pre-shell app
+// has no in-app i18n to switch, so the rule SKIPS when the locale store is
+// absent. WARN during rollout (codify→backfill→shipgate, like § Theming);
+// promote per-app to FAIL with `"language/enforce": true` in qa/baseline.json.
+const enforceLanguage = baseline['language/enforce'] === true;
+const languageWarn = (id, message, detail) => (enforceLanguage ? fail : warn)(id, message, detail);
+
+const ruleLanguageControl = () => {
+  if (surface !== 'rn') return skip('language/control', 'Not a React Native app');
+  if (!exists(join(appDir, 'src/i18n/localePreference.ts')))
+    return skip('language/control', 'No shell i18n locale store — pre-shell app, nothing to switch in-app');
+  const haystack = [...srcSourceFiles(), join(appDir, 'App.tsx')]
+    .map(readText)
+    .filter(Boolean)
+    .join('\n');
+  if (!haystack) return skip('language/control', 'No source files');
+  const hasControl = /<LanguageSetting\b/.test(haystack);
+  const hasApply = /useApplyLocalePreference\s*\(/.test(haystack);
+  if (hasControl && hasApply) {
+    return pass('language/control',
+      'Renders <LanguageSetting/> and applies the saved language at root (canon § Translations)');
+  }
+  const missing = [];
+  if (!hasControl) missing.push('no <LanguageSetting/> rendered — Settings must offer a Language picker');
+  if (!hasApply) missing.push('no useApplyLocalePreference() at the app root (should ride the synced AppShell)');
+  return languageWarn('language/control', 'In-app language control incomplete (canon § Translations)', missing);
+};
+
 // ---------- runner ----------
 
 const CANONICAL_RULES = [
@@ -768,6 +807,7 @@ const CANONICAL_RULES = [
   ruleNoPlatformEarlyReturn,
   ruleEasJsonShape,
   ruleAppearanceToggle,
+  ruleLanguageControl,
   ruleAppNameSpotlightSafe,
   ruleKeyboardDismissEscape,
   ruleManifestMv3,
