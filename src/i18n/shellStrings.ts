@@ -51,6 +51,9 @@ export const SHELL_STRINGS = {
       'Privacy-first replacements for paywalled utility apps. Open source. Pay what you want.',
     learnMore: 'Learn more',
     learnMoreA11y: 'Learn more at joshapproved.com',
+    // Cross-promo section label (MoreFromJA). "Josh Approved" stays inline as the
+    // brand; the surrounding words translate per locale.
+    moreFrom: 'More from Josh Approved',
   },
   // Donation prompt (DonationModal). The button label reuses about.support.
   donate: {

@@ -24,6 +24,7 @@ import React from 'react';
 import { View, Text, Pressable, Linking, Platform, StyleSheet } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 import { moreFromJA } from './jaCatalog';
+import { t } from '../i18n';
 import {
   useTheme,
   fontFamily,
@@ -34,10 +35,10 @@ import {
   type Colors,
 } from '../theme';
 
-// Brand proper noun — intentionally a literal, not an i18n key. "Josh Approved"
-// is the studio name and does not translate (voice canon), and keeping this
-// dependency-free lets the component sync cleanly into pre-i18n app screens.
-const MORE_FROM_LABEL = 'More from Josh Approved';
+// The section label translates ("More from …" → "Más de …" / "Mehr von …"),
+// but the studio name "Josh Approved" inside it never does (voice canon) — the
+// per-locale string in shellLocales keeps the brand inline. Every app carries
+// the i18n module, so reading this through t() is safe.
 
 type Props = {
   /** Host app's repo slug, so it excludes itself. Optional. */
@@ -52,7 +53,7 @@ export function MoreFromJA({ excludeSlug }: Props) {
 
   return (
     <>
-      <Text style={s.sectionLabel}>{MORE_FROM_LABEL}</Text>
+      <Text style={s.sectionLabel}>{t('about.moreFrom')}</Text>
       {items.map((app) => (
         <Pressable
           key={app.slug}

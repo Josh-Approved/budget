@@ -686,7 +686,9 @@ const ruleNoHardcodedStrings = () => {
   const files = srcSourceFiles().filter((f) => {
     const rel = relative(join(appDir, 'src'), f).replace(/\\/g, '/');
     if (!/\.tsx$/.test(f)) return false;
-    if (!(rel.startsWith('screens/') || rel.startsWith('components/'))) return false;
+    // Scan screens + components AND the app shell (src/shell — AppShell and any
+    // shell chrome); the shell renders user-facing text too (canon § Translations).
+    if (!(rel.startsWith('screens/') || rel.startsWith('components/') || rel.startsWith('shell/'))) return false;
     if (I18N_SKIP_FILES.has(f.split(/[\\/]/).pop())) return false;
     return true;
   });
