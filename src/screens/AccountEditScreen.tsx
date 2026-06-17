@@ -60,7 +60,7 @@ export default function AccountEditScreen({ navigation, route }: Props) {
             accessibilityLabel={t('common.save')}
             style={({ pressed }) => [s.saveBtn, pressed && s.pressed, !valid && s.disabled]}
           >
-            <Check size={20} color={c.fgOnInk} strokeWidth={2.5} />
+            <Check size={20} color={c.inkButtonText} strokeWidth={2.5} />
           </Pressable>
         }
       />

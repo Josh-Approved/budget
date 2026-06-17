@@ -279,7 +279,7 @@ export default function HomeScreen({ navigation }: Props) {
             accessibilityRole="button"
             accessibilityLabel={t('home.addExpense')}
           >
-            <Minus size={26} color={c.fgOnInk} strokeWidth={2.5} />
+            <Minus size={26} color={c.inkButtonText} strokeWidth={2.5} />
           </Pressable>
         </View>
       ) : null}
