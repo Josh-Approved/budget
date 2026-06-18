@@ -10,7 +10,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { HandHeart, Mail } from 'lucide-react-native';
-import { openBmac, openFeedbackMail } from '../lib/links';
+import { BMAC_URL, openUrl, openFeedbackMail } from '../lib/links';
 import { t } from '../i18n';
 import {
   useTheme,
@@ -28,7 +28,7 @@ export function FundingFooter() {
     <View style={s.wrap}>
       <Pressable
         style={({ pressed }) => [s.link, pressed && s.pressed]}
-        onPress={openBmac}
+        onPress={() => openUrl(BMAC_URL)}
         accessibilityRole="button"
         accessibilityLabel={t('about.support')}
       >

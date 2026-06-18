@@ -13,7 +13,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme, fontFamily, space, type as t, type Colors } from '../theme';
+import { useTheme, fontFamily, space, type as ty, type Colors } from '../theme';
+import { t } from '../i18n';
 
 function Fallback() {
   const { c } = useTheme();
@@ -21,11 +22,8 @@ function Fallback() {
   return (
     <SafeAreaView style={s.safe}>
       <View style={s.center}>
-        <Text style={s.title}>Something went wrong</Text>
-        <Text style={s.body}>
-          The app hit an unexpected error. Reopen it to keep going — your data is
-          safe on this device.
-        </Text>
+        <Text style={s.title}>{t('error.title')}</Text>
+        <Text style={s.body}>{t('error.body')}</Text>
       </View>
     </SafeAreaView>
   );
@@ -63,13 +61,13 @@ function makeStyles(c: Colors) {
       gap: space.s4,
     },
     title: {
-      ...t.md,
+      ...ty.md,
       fontFamily: fontFamily.sansSemibold,
       color: c.fg,
       textAlign: 'center',
     },
     body: {
-      ...t.base,
+      ...ty.base,
       fontFamily: fontFamily.sans,
       color: c.fgMuted,
       textAlign: 'center',

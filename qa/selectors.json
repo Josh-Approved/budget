@@ -1,11 +1,13 @@
 {
-  "$comment": "Selector registry for the tracker archetype. Flows reference @keys, never raw copy. text = Maestro regex (matches visible text OR a11y label). Anchors target the seeded entries (src/qa/fixtures.ts). The AddEntry value field autofocuses and defaults to 1, so the journey only types into the note field and asserts the noted entry on the home list.",
+  "$comment": "Selector registry for the budget app. Flows reference @keys, never raw copy. text = Maestro regex (matches visible text OR a11y label; Maestro full-matches, so anchors that are a substring of a longer label are wrapped in .*). Anchors target the seeded budget (src/qa/fixtures.ts) and the add-expense flow. The amount keypad key '5' sets a $5 expense; the default category (Groceries) is pre-selected, so the journey only types a note and asserts it on the home list.",
   "anchors": {
-    "home-title":   { "text": "Tracker", "note": "TrackerHomeScreen header title (i18n home.title)" },
-    "today-card":   { "text": "Today", "note": "the Today summary card label (i18n home.today)" },
-    "add-button":   { "text": "Log an entry", "note": "the + FAB on home (a11y label home.add). Opens AddEntry." },
-    "note-input":   { "text": "Note .optional.", "note": "the note TextInput on AddEntry (a11y label entry.note = 'Note (optional)'; parens escaped for the Maestro regex)." },
-    "save-button":  { "text": "Save", "note": "the save action in the AddEntry header (a11y label entry.save)" },
-    "added-entry":  { "text": "Espresso", "note": "an entry NOT in the seed; logged by the core add action. assertNot before / assert after = the write + summary refresh landed." }
+    "home-title":        { "text": "Budget", "note": "HomeScreen header title (i18n home.title)" },
+    "chart-center":      { "text": "Spent", "note": "the donut chart centre label (i18n home.spent) — present once the period view has rendered" },
+    "add-expense":       { "text": "Add expense", "note": "the − FAB on home (a11y label home.addExpense). Opens AddTransaction in expense mode." },
+    "new-expense-title": { "text": "New expense", "note": "AddTransaction header title when adding an expense (i18n tx.newExpense)" },
+    "key-5":             { "text": "5", "note": "the '5' key on the amount keypad (a11y label '5') — sets a $5 amount" },
+    "note-input":        { "text": ".*What was it.*", "note": "the note TextInput on AddTransaction (placeholder tx.notePlaceholder 'What was it? (optional)')" },
+    "save-button":       { "text": "Save", "note": "the save action in the AddTransaction header (a11y label tx.save)" },
+    "added-tx":          { "text": "Espresso", "note": "a transaction NOT in the seed; added by the core flow. assertNot before / assert after = the write + chart/balance refresh landed." }
   }
 }

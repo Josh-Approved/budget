@@ -15,19 +15,20 @@ appId: com.joshapproved.budget
     timeout: 8000
 - takeScreenshot: qa/captures/${STORE}/00-launch
 - extendedWaitUntil:
-    visible: { text: "Tracker" }
+    visible: { text: "Budget" }
     timeout: 30000
 - extendedWaitUntil:
-    visible: { text: "Today" }
+    visible: { text: "Spent" }
     timeout: 15000
 - takeScreenshot: qa/captures/${STORE}/home
 - assertNotVisible: { text: "Espresso" }
-- tapOn: { text: "Log an entry" }
+- tapOn: { text: "Add expense" }
 - extendedWaitUntil:
-    visible: { text: "Note .optional." }
+    visible: { text: "New expense" }
     timeout: 10000
 - takeScreenshot: qa/captures/${STORE}/add
-- tapOn: { text: "Note .optional." }
+- tapOn: { text: "5" }
+- tapOn: { text: ".*What was it.*" }
 - inputText: "Espresso"
 - tapOn: { text: "Save" }
 - assertVisible: { text: "Espresso" }

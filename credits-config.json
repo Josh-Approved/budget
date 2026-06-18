@@ -3,7 +3,11 @@
   "intro": "This app is built on the work of these open-source projects.",
   "include": [
     { "package": "react-native", "displayName": "React Native" },
-    { "package": "expo", "displayName": "Expo" }
+    { "package": "expo", "displayName": "Expo" },
+    { "package": "@react-navigation/native", "displayName": "React Navigation" },
+    { "package": "react-native-svg", "displayName": "react-native-svg" },
+    { "package": "zustand", "displayName": "Zustand" },
+    { "package": "lucide-react-native", "displayName": "Lucide" }
   ],
   "extra": [
     {

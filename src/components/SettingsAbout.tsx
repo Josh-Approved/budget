@@ -14,6 +14,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { HandHeart, Mail, Star, Shield, Code2, Library } from 'lucide-react-native';
 import { AboutRow } from './AboutRow';
 import { Wordmark } from './Wordmark';
+import { MoreFromJA } from './MoreFromJA';
 import { t } from '../i18n';
 import {
   BMAC_URL,
@@ -41,6 +42,9 @@ type Props = {
 export function SettingsAbout({ onAcknowledgements }: Props) {
   const { c } = useTheme();
   const s = makeStyles(c);
+  // Repo slug (last path segment of REPO_URL) — used so the cross-promo row
+  // excludes the host app from its own "More from Josh Approved" list.
+  const selfSlug = (REPO_URL.split('/').pop() || '').toLowerCase();
   return (
     <>
       <Text style={s.sectionLabel}>{t('settings.about')}</Text>
@@ -52,6 +56,8 @@ export function SettingsAbout({ onAcknowledgements }: Props) {
       <AboutRow label={t('about.acknowledgements')} icon={Library} onPress={onAcknowledgements} />
       <AboutRow label={t('about.version')} value={versionLabel()} />
 
+      <MoreFromJA excludeSlug={selfSlug} />
+
       <View style={s.stamp}>
         <Wordmark />
         <Text style={s.stampLine}>{t('about.oneLiner')}</Text>
@@ -59,7 +65,7 @@ export function SettingsAbout({ onAcknowledgements }: Props) {
           onPress={() => openUrl(STUDIO_URL)}
           hitSlop={8}
           accessibilityRole="button"
-          accessibilityLabel="Learn more at joshapproved.com"
+          accessibilityLabel={t('about.learnMoreA11y')}
         >
           <Text style={s.learnMore}>{t('about.learnMore')}</Text>
         </Pressable>
