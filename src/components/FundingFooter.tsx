@@ -21,14 +21,20 @@ import {
   type Colors,
 } from '../theme';
 
-export function FundingFooter() {
+type Props = {
+  /** When set, the support row opens the in-app tip jar instead of the BMAC
+   *  link-out (canon § Tip jar — the 3.1.1-compliant IAP replacement). */
+  onSupport?: () => void;
+};
+
+export function FundingFooter({ onSupport }: Props = {}) {
   const { c } = useTheme();
   const s = makeStyles(c);
   return (
     <View style={s.wrap}>
       <Pressable
         style={({ pressed }) => [s.link, pressed && s.pressed]}
-        onPress={() => openUrl(BMAC_URL)}
+        onPress={onSupport ?? (() => openUrl(BMAC_URL))}
         accessibilityRole="button"
         accessibilityLabel={t('about.support')}
       >

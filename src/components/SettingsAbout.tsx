@@ -37,9 +37,12 @@ import {
 type Props = {
   /** Navigate to the Acknowledgements screen. */
   onAcknowledgements: () => void;
+  /** When set, the support row opens the in-app tip jar instead of the BMAC
+   *  link-out (canon § Tip jar — the 3.1.1-compliant IAP replacement). */
+  onSupport?: () => void;
 };
 
-export function SettingsAbout({ onAcknowledgements }: Props) {
+export function SettingsAbout({ onAcknowledgements, onSupport }: Props) {
   const { c } = useTheme();
   const s = makeStyles(c);
   // Repo slug (last path segment of REPO_URL) — used so the cross-promo row
@@ -48,7 +51,7 @@ export function SettingsAbout({ onAcknowledgements }: Props) {
   return (
     <>
       <Text style={s.sectionLabel}>{t('settings.about')}</Text>
-      <AboutRow label={t('about.support')} icon={HandHeart} onPress={() => openUrl(BMAC_URL)} />
+      <AboutRow label={t('about.support')} icon={HandHeart} onPress={onSupport ?? (() => openUrl(BMAC_URL))} />
       <AboutRow label={t('about.feedback')} icon={Mail} onPress={openFeedbackMail} />
       <AboutRow label={t('about.review')} icon={Star} onPress={openReview} />
       <AboutRow label={t('about.privacy')} icon={Shield} onPress={() => openUrl(PRIVACY_URL)} />

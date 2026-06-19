@@ -21,6 +21,9 @@ import { AboutRow } from '../components/AboutRow';
 import { SettingsAbout } from '../components/SettingsAbout';
 import { LanguageSetting } from '../components/LanguageSetting';
 import { ScreenHeader } from '../components/ScreenHeader';
+import TipJarSheet from '../components/TipJarSheet';
+import { TIP_PRODUCT_IDS } from '../constants/tipProducts';
+import { TIP_JAR_ENABLED } from '../lib/links';
 import { t } from '../i18n';
 import { useTheme, fontFamily, space, type as ty, boundedContent, type Colors, AppearanceToggle } from '../theme';
 
@@ -32,6 +35,7 @@ export default function SettingsScreen({ navigation }: Props) {
   const store = useBudgetStore();
   const { settings } = store;
   const [status, setStatus] = useState<string | null>(null);
+  const [tipVisible, setTipVisible] = useState(false);
 
   const accountName = useMemo(
     () => activeAccounts(store.accounts).find((a) => a.id === settings.defaultAccountId)?.name ?? t('settings.none'),
@@ -121,8 +125,19 @@ export default function SettingsScreen({ navigation }: Props) {
         <AboutRow label={t('settings.importCsv')} icon={FileUp} onPress={onImportCsv} />
         {status ? <Text style={s.status}>{status}</Text> : null}
 
-        <SettingsAbout onAcknowledgements={() => navigation.navigate('Acknowledgements')} />
+        <SettingsAbout
+          onAcknowledgements={() => navigation.navigate('Acknowledgements')}
+          onSupport={TIP_JAR_ENABLED ? () => setTipVisible(true) : undefined}
+        />
       </ScrollView>
+
+      {tipVisible && (
+        <TipJarSheet
+          visible
+          onDismiss={() => setTipVisible(false)}
+          productIds={TIP_PRODUCT_IDS}
+        />
+      )}
     </SafeAreaView>
   );
 }
