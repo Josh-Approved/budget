@@ -39,6 +39,9 @@ import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { AccountPills } from '../components/AccountPills';
 import { EmptyState } from '../components/EmptyState';
 import { FundingFooter } from '../components/FundingFooter';
+import TipJarSheet from '../components/TipJarSheet';
+import { TIP_PRODUCT_IDS } from '../constants/tipProducts';
+import { TIP_JAR_ENABLED } from '../lib/links';
 import { TextInput } from 'react-native';
 import { formatMinor, formatSignedMinor } from '../lib/format';
 import { t, formatDate, getLocale } from '../i18n';
@@ -75,6 +78,7 @@ export default function HomeScreen({ navigation }: Props) {
   const [selectedCat, setSelectedCat] = useState<string | undefined>(undefined);
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
+  const [tipVisible, setTipVisible] = useState(false);
 
   const today = tsToDateStr(Date.now());
   const [from, to] = periodRange(periodType, today, offset);
@@ -260,7 +264,13 @@ export default function HomeScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AddTransaction', { editId: item.id })}
           />
         )}
-        ListFooterComponent={!searching ? <FundingFooter /> : null}
+        ListFooterComponent={
+          !searching ? (
+            <FundingFooter
+              onSupport={TIP_JAR_ENABLED ? () => setTipVisible(true) : undefined}
+            />
+          ) : null
+        }
       />
 
       {!searching ? (
@@ -283,6 +293,14 @@ export default function HomeScreen({ navigation }: Props) {
           </Pressable>
         </View>
       ) : null}
+
+      {tipVisible && (
+        <TipJarSheet
+          visible
+          onDismiss={() => setTipVisible(false)}
+          productIds={TIP_PRODUCT_IDS}
+        />
+      )}
     </SafeAreaView>
   );
 }
