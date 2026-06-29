@@ -39,6 +39,7 @@ import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { AccountPills } from '../components/AccountPills';
 import { EmptyState } from '../components/EmptyState';
 import { FundingFooter } from '../components/FundingFooter';
+import { usePullRevealFooter } from '../components/usePullRevealFooter';
 import TipJarSheet from '../components/TipJarSheet';
 import { TIP_PRODUCT_IDS } from '../constants/tipProducts';
 import { TIP_JAR_ENABLED } from '../lib/links';
@@ -79,6 +80,8 @@ export default function HomeScreen({ navigation }: Props) {
   const [searching, setSearching] = useState(false);
   const [query, setQuery] = useState('');
   const [tipVisible, setTipVisible] = useState(false);
+
+  const { pullToReveal, reveal, onScrollJS, footerHeight, onFooterLayout } = usePullRevealFooter();
 
   const today = tsToDateStr(Date.now());
   const [from, to] = periodRange(periodType, today, offset);
@@ -240,6 +243,9 @@ export default function HomeScreen({ navigation }: Props) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={s.listContent}
         stickySectionHeadersEnabled={false}
+        onScroll={pullToReveal ? onScrollJS : undefined}
+        scrollEventThrottle={16}
+        alwaysBounceVertical={pullToReveal}
         ListEmptyComponent={
           <EmptyState message={searching ? t('home.emptySearch') : t('home.empty')} />
         }
@@ -266,15 +272,19 @@ export default function HomeScreen({ navigation }: Props) {
         )}
         ListFooterComponent={
           !searching ? (
-            <FundingFooter
-              onSupport={TIP_JAR_ENABLED ? () => setTipVisible(true) : undefined}
-            />
+            <View style={s.footerHolder} onLayout={onFooterLayout}>
+              <FundingFooter
+                onSupport={TIP_JAR_ENABLED ? () => setTipVisible(true) : undefined}
+                reveal={reveal}
+                pullToReveal={pullToReveal}
+              />
+            </View>
           ) : null
         }
       />
 
       {!searching ? (
-        <View style={s.fabRow}>
+        <View style={[s.fabRow, { bottom: footerHeight + space.s4 }]}>
           <Pressable
             style={({ pressed }) => [s.fabSecondary, pressed && s.pressed]}
             onPress={() => openAdd('income')}
@@ -418,7 +428,8 @@ function makeStyles(c: Colors) {
     },
     toticValue: { fontFamily: fontFamily.mono, fontSize: 15, lineHeight: 20, color: c.fg },
     toticLabel: { ...ty.xs, fontFamily: fontFamily.sans, color: c.fgMuted, textTransform: 'uppercase', letterSpacing: 0.4 },
-    listContent: { ...boundedContent, paddingBottom: space.s9 + space.s8 },
+    listContent: { ...boundedContent, flexGrow: 1, paddingBottom: space.s5 },
+    footerHolder: { marginTop: 'auto' },
     dayHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -446,7 +457,6 @@ function makeStyles(c: Colors) {
     fabRow: {
       position: 'absolute',
       right: space.s6,
-      bottom: space.s7,
       flexDirection: 'row',
       alignItems: 'center',
       gap: space.s4,
