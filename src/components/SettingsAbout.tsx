@@ -15,13 +15,13 @@ import { HandHeart, Mail, Star, Shield, Code2, Library } from 'lucide-react-nati
 import { AboutRow } from './AboutRow';
 import { Wordmark } from './Wordmark';
 import { MoreFromJA } from './MoreFromJA';
+import { useFeedback } from '../feedback/FeedbackProvider';
 import { t } from '../i18n';
 import {
   BMAC_URL,
   PRIVACY_URL,
   REPO_URL,
   STUDIO_URL,
-  openFeedbackMail,
   openReview,
   openUrl,
   versionLabel,
@@ -45,6 +45,7 @@ type Props = {
 export function SettingsAbout({ onAcknowledgements, onSupport }: Props) {
   const { c } = useTheme();
   const s = makeStyles(c);
+  const { open: openFeedback } = useFeedback();
   // Repo slug (last path segment of REPO_URL) — used so the cross-promo row
   // excludes the host app from its own "More from Josh Approved" list.
   const selfSlug = (REPO_URL.split('/').pop() || '').toLowerCase();
@@ -52,7 +53,7 @@ export function SettingsAbout({ onAcknowledgements, onSupport }: Props) {
     <>
       <Text style={s.sectionLabel}>{t('settings.about')}</Text>
       <AboutRow label={t('about.support')} icon={HandHeart} onPress={onSupport ?? (() => openUrl(BMAC_URL))} />
-      <AboutRow label={t('about.feedback')} icon={Mail} onPress={openFeedbackMail} />
+      <AboutRow label={t('about.feedback')} icon={Mail} onPress={() => openFeedback()} />
       <AboutRow label={t('about.review')} icon={Star} onPress={openReview} />
       <AboutRow label={t('about.privacy')} icon={Shield} onPress={() => openUrl(PRIVACY_URL)} />
       <AboutRow label={t('about.source')} icon={Code2} onPress={() => openUrl(REPO_URL)} />
