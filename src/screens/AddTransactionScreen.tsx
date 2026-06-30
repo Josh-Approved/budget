@@ -29,6 +29,9 @@ import { parseAmountToMinor } from '../data/money';
 import { categoryIcon } from '../data/categoryIcons';
 import { categoryColor } from '../theme/categoryPalette';
 import { isReceiptScanSupported } from '../lib/receiptScan';
+import ReviewModal from '../components/ReviewModal';
+import { recordSuccessfulCompletion } from '../storage/reviewPrompt';
+import { IOS_APP_STORE_ID, ANDROID_PACKAGE } from '../lib/links';
 import { ScreenHeader } from '../components/ScreenHeader';
 import { currencySymbol } from '../lib/format';
 import { t, formatDate } from '../i18n';
@@ -73,6 +76,7 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
   const [note, setNote] = useState<string>(editing?.note ?? '');
   const [repeat, setRepeat] = useState(false);
   const [frequency, setFrequency] = useState<Frequency>('monthly');
+  const [reviewVisible, setReviewVisible] = useState(false);
 
   const cats = useMemo(() => activeCategories(store.categories, kind), [store.categories, kind]);
   // Keep the selected category valid for the chosen kind.
@@ -106,30 +110,39 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
         occurredAt: dateStr,
         note: note.trim() || undefined,
       });
-    } else {
-      store.addTransaction({
+      navigation.goBack();
+      return;
+    }
+    store.addTransaction({
+      kind,
+      amountMinor: minor,
+      accountId,
+      categoryId: selectedCat.id,
+      occurredAt: dateStr,
+      note: note.trim() || undefined,
+    });
+    if (repeat) {
+      store.addRecurringRule({
         kind,
         amountMinor: minor,
         accountId,
         categoryId: selectedCat.id,
-        occurredAt: dateStr,
         note: note.trim() || undefined,
+        frequency,
+        interval: 1,
+        // first auto-entry is the NEXT occurrence (we already added this one)
+        startDate: advanceDueDate(dateStr, frequency, 1),
       });
-      if (repeat) {
-        store.addRecurringRule({
-          kind,
-          amountMinor: minor,
-          accountId,
-          categoryId: selectedCat.id,
-          note: note.trim() || undefined,
-          frequency,
-          interval: 1,
-          // first auto-entry is the NEXT occurrence (we already added this one)
-          startDate: advanceDueDate(dateStr, frequency, 1),
-        });
-      }
     }
-    navigation.goBack();
+    // Saving a transaction is this app's genuine success. The canonical counter
+    // gates the prompt to the 2nd completion (cap 3) so it can't spam; hold this
+    // screen's dismissal until the prompt resolves.
+    recordSuccessfulCompletion()
+      .then((show) => {
+        if (show) setReviewVisible(true);
+        else navigation.goBack();
+      })
+      .catch(() => navigation.goBack());
   };
 
   const onDelete = () => {
@@ -165,6 +178,17 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
             <Check size={20} color={c.inkButtonText} strokeWidth={2.5} />
           </Pressable>
         }
+      />
+
+      <ReviewModal
+        visible={reviewVisible}
+        onDismiss={() => {
+          setReviewVisible(false);
+          navigation.goBack();
+        }}
+        appName="Budget"
+        iosAppStoreId={IOS_APP_STORE_ID}
+        androidPackageName={ANDROID_PACKAGE}
       />
 
       <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
