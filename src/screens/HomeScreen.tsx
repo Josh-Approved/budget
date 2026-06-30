@@ -38,6 +38,7 @@ import { CategoryChart } from '../components/CategoryChart';
 import { PeriodSwitcher } from '../components/PeriodSwitcher';
 import { AccountPills } from '../components/AccountPills';
 import { EmptyState } from '../components/EmptyState';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { FundingFooter } from '../components/FundingFooter';
 import { usePullRevealFooter } from '../components/usePullRevealFooter';
 import TipJarSheet from '../components/TipJarSheet';
@@ -81,7 +82,16 @@ export default function HomeScreen({ navigation }: Props) {
   const [query, setQuery] = useState('');
   const [tipVisible, setTipVisible] = useState(false);
 
-  const { pullToReveal, reveal, onScrollJS, footerHeight, onFooterLayout } = usePullRevealFooter();
+  const {
+    pullToReveal,
+    reveal,
+    gesture,
+    onScrollJS,
+    onScrollViewLayout,
+    onContentSizeChange,
+    footerHeight,
+    onFooterLayout,
+  } = usePullRevealFooter();
 
   const today = tsToDateStr(Date.now());
   const [from, to] = periodRange(periodType, today, offset);
@@ -238,6 +248,7 @@ export default function HomeScreen({ navigation }: Props) {
         </View>
       ) : null}
 
+      <GestureDetector gesture={gesture}>
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id}
@@ -246,6 +257,9 @@ export default function HomeScreen({ navigation }: Props) {
         onScroll={pullToReveal ? onScrollJS : undefined}
         scrollEventThrottle={16}
         alwaysBounceVertical={pullToReveal}
+        overScrollMode={pullToReveal ? 'never' : 'auto'}
+        onLayout={onScrollViewLayout}
+        onContentSizeChange={onContentSizeChange}
         ListEmptyComponent={
           <EmptyState message={searching ? t('home.emptySearch') : t('home.empty')} />
         }
@@ -282,6 +296,7 @@ export default function HomeScreen({ navigation }: Props) {
           ) : null
         }
       />
+      </GestureDetector>
 
       {!searching ? (
         <View style={[s.fabRow, { bottom: footerHeight + space.s4 }]}>
