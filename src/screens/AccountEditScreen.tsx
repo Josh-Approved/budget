@@ -64,7 +64,11 @@ export default function AccountEditScreen({ navigation, route }: Props) {
           </Pressable>
         }
       />
-      <ScrollView contentContainerStyle={s.body}>
+      <ScrollView
+        contentContainerStyle={s.body}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+      >
         <Text style={s.label}>{t('accounts.name')}</Text>
         <TextInput
           style={s.input}

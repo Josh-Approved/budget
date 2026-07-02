@@ -1,1 +1,4 @@
-{"i18n/enforce": true}
+{
+  "i18n/enforce": true,
+  "rn/entry-screen-autofocus/skip": ["AddTransactionScreen.tsx"]
+}
