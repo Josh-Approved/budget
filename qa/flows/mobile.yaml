@@ -22,13 +22,21 @@ appId: com.joshapproved.budget
     timeout: 15000
 - takeScreenshot: qa/captures/${STORE}/home
 - assertNotVisible: { text: "Espresso" }
-- tapOn: { text: "Add expense" }
+- tapOn:
+    text: "Add expense"
+    retryTapIfNoChange: true
 - extendedWaitUntil:
     visible: { text: "New expense" }
     timeout: 10000
 - takeScreenshot: qa/captures/${STORE}/add
-- tapOn: { text: "5" }
-- tapOn: { text: ".*What was it.*" }
+- tapOn:
+    text: "5"
+    retryTapIfNoChange: true
+- tapOn:
+    text: ".*What was it.*"
+    retryTapIfNoChange: true
 - inputText: "Espresso"
-- tapOn: { text: "Save" }
+- tapOn:
+    text: "Save"
+    retryTapIfNoChange: true
 - assertVisible: { text: "Espresso" }
