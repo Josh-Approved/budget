@@ -303,7 +303,8 @@ export default function AddTransactionScreen({ navigation, route }: Props) {
           placeholder={t('tx.notePlaceholder')}
           placeholderTextColor={c.fgSubtle}
           accessibilityLabel={t('tx.note')}
-          returnKeyType="done"
+          multiline
+          textAlignVertical="top"
         />
 
         {/* Repeat (new transactions only) */}
@@ -487,8 +488,10 @@ function makeStyles(c: Colors) {
     dateLabelWrap: { flex: 1, alignItems: 'center' },
     dateLabel: { ...ty.base, fontFamily: fontFamily.sansSemibold, color: c.fg },
     noteInput: {
-      minHeight: target.min,
+      minHeight: target.min * 1.6,
       paddingHorizontal: space.s4,
+      paddingTop: space.s3,
+      paddingBottom: space.s3,
       borderRadius: radius.md,
       backgroundColor: c.bgSubtle,
       ...ty.base,
