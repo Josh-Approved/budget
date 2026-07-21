@@ -123,7 +123,7 @@ function makeStyles(c: Colors) {
     icon: { width: 34, height: 34, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' },
     name: { ...ty.base, fontFamily: fontFamily.sans, color: c.fg, flex: 1 },
     nameHidden: { color: c.fgMuted },
-    tag: { ...ty.xs, fontFamily: fontFamily.sans, color: c.fgSubtle, textTransform: 'uppercase', letterSpacing: 0.4 },
+    tag: { ...ty.xs, fontFamily: fontFamily.sans, color: c.fgMuted, textTransform: 'uppercase', letterSpacing: 0.4 },
     stepBtn: { width: 36, height: target.min, alignItems: 'center', justifyContent: 'center' },
     addRow: { flexDirection: 'row', alignItems: 'center', gap: space.s3, paddingHorizontal: space.s5, minHeight: target.min },
     addText: { ...ty.base, fontFamily: fontFamily.sans, color: c.fgMuted },
