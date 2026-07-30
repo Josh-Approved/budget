@@ -20,22 +20,12 @@ export const APP_NAME = 'Budget - Josh Approved';
 export const IOS_APP_STORE_ID = '';
 export const ANDROID_PACKAGE = 'com.joshapproved.budget';
 
-export const BMAC_URL = 'https://buymeacoffee.com/jtysonwilliams';
-
 /**
- * Gates every Buy Me a Coffee surface — the tertiary FundingFooter, the
- * Settings/About support row, and the soft donation prompt. False because
- * Apple rejects external donation links for a for-profit app (App Store
- * guideline 3.1.1 — must be In-App Purchase). It stays false — the BMAC
- * link-out is the rejected surface; the IAP tip jar replaces it.
- *
- * TIP_JAR_ENABLED gates the IAP tip jar — the sanctioned 3.1.1 replacement.
- * It powers the same support placements the BMAC surfaces used (the home
- * support link and the Settings/About support row), each now opening the
- * canonical TipJarSheet instead of a browser link.
+ * Gates the IAP tip jar — the studio's only funding surface (Apple 3.1.1
+ * forbids an external donation link-out for a for-profit app). It powers the
+ * home support link and the Settings/About support row, each opening the
+ * canonical TipJarSheet.
  */
-export const DONATIONS_ENABLED: boolean = false;
-
 export const TIP_JAR_ENABLED: boolean = true;
 
 export const STUDIO_URL = 'https://joshapproved.com';
@@ -52,10 +42,6 @@ export function versionLabel(): string {
 
 export function openUrl(url: string): void {
   Linking.openURL(url).catch(() => {});
-}
-
-export function openBmac(): void {
-  openUrl(BMAC_URL);
 }
 
 export function openFeedbackMail(): void {
