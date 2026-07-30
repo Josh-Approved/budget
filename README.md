@@ -5,7 +5,7 @@ A simple expense tracker. Tap +/−, pick a category, and see your month at a gl
 - Add expenses and income in seconds with a built-in keypad.
 - A category breakdown of where your money went, by day, week, month, or year.
 - Multiple accounts (cash, card, savings) with running balances.
-- Recurring transactions for rent and subscriptions, added when they're due — never silently.
+- Recurring transactions for rent and subscriptions, added when they're due (never silently).
 - Search your history, and export or restore everything as CSV or a JSON backup.
 
 ## Run
@@ -21,8 +21,8 @@ Your data stays on your device. No accounts, no tracking, no analytics. See [PRI
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
 
 ## Feedback
 
-Email [feedback@joshapproved.com](mailto:feedback@joshapproved.com). No ads, no subscriptions, no data harvest — if it's worth a few dollars to you, there's an optional tip jar in the app.
+Email [feedback@joshapproved.com](mailto:feedback@joshapproved.com). No ads, no subscriptions, no data harvest. If it's worth a few dollars to you, there's an optional tip jar in the app.
