@@ -10,6 +10,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAppFonts } from './src/theme';
 import { AppShell } from './src/shell/AppShell';
 import { useBudgetStore } from './src/store/budget';
+import { IOS_APP_STORE_ID, ANDROID_PACKAGE } from './src/lib/links';
 import HomeScreen from './src/screens/HomeScreen';
 import AddTransactionScreen from './src/screens/AddTransactionScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -44,6 +45,15 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/** Store identity for the canonical review prompt. The shell owns the trigger
+ *  (session count, 3/15/30 schedule, 3-per-install cap) — this app carries no
+ *  trigger code. Module scope so the object identity is stable across renders. */
+const REVIEW = {
+  appName: 'Budget',
+  iosAppStoreId: IOS_APP_STORE_ID,
+  androidPackageName: ANDROID_PACKAGE,
+};
+
 export default function App() {
   const [fontsLoaded] = useAppFonts();
   const hydrated = useBudgetStore((s) => s.hydrated);
@@ -58,7 +68,7 @@ export default function App() {
   const ready = fontsLoaded && hydrated;
 
   return (
-    <AppShell ready={ready}>
+    <AppShell ready={ready} review={REVIEW}>
       <Stack.Navigator
         initialRouteName="Home"
         screenOptions={{ headerShown: false, animation: QA_MODE ? 'none' : undefined }}

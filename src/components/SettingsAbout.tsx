@@ -37,7 +37,9 @@ type Props = {
   /** Navigate to the Acknowledgements screen. */
   onAcknowledgements: () => void;
   /** Opens the in-app tip jar (canon § Tip jar — the only funding surface;
-   *  Apple 3.1.1 forbids an external donation link-out). */
+   *  Apple 3.1.1 forbids an external donation link-out). Until the app wires
+   *  its tip jar (TipJarSheet + product ids), omit it and the Support row is
+   *  not rendered — there is no external fallback. */
   onSupport?: () => void;
 };
 
@@ -51,7 +53,7 @@ export function SettingsAbout({ onAcknowledgements, onSupport }: Props) {
   return (
     <>
       <Text style={s.sectionLabel}>{t('settings.about')}</Text>
-      <AboutRow label={t('about.support')} icon={HandHeart} onPress={onSupport} />
+      {onSupport ? <AboutRow label={t('about.support')} icon={HandHeart} onPress={onSupport} /> : null}
       <AboutRow label={t('about.feedback')} icon={Mail} onPress={() => openFeedback()} />
       <AboutRow label={t('about.review')} icon={Star} onPress={openReview} />
       <AboutRow label={t('about.privacy')} icon={Shield} onPress={() => openUrl(PRIVACY_URL)} />
